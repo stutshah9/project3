@@ -2,13 +2,11 @@
  * {Project Description Here}
  */
 
-
-
 /**
  * The class containing the main method.
  *
- * @author {Your Name Here}
- * @version {Put Something Here}
+ * @author Stuti Shah & Lauren Spehlmann
+ * @version 3/27/2024
  */
 
 // On my honor:
@@ -35,9 +33,24 @@ public class Quicksort {
 
     /**
      * @param args
-     *      Command line parameters.  See the project spec!!!
+     *            Command line parameters.
+     *            <data-file-name> is the file to be sorted. The sorting takes
+     *            place in that file, so this program does modify the input data
+     *            file. Be careful to keep a copy of the original when you do
+     *            your testing.
+     * 
+     *            <numb-buffers> determines the number of buffers allocated for
+     *            the buffer pool. This value will be in the range 1–20.
+     * 
+     *            <stat-file-name> is the name of a file that your program will
+     *            generate to store runtime statistics; see below for more
+     *            information.
      */
     public static void main(String[] args) {
         // This is the main file for the program.
+        String dataFileName = args[0];
+        int numBuffers = Integer.parseInt(args[1]);
+        String statFileName = args[2];
+
     }
 }
