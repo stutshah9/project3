@@ -16,7 +16,8 @@ public class Buffer {
      * @param id
      *            The index of the block in the file
      * @param bytes
-     *            The file's contents for the requested block
+     *            An array of size 4096 with the file's contents for the
+     *            requested block
      */
     public Buffer(int id, byte[] bytes) {
         contents = bytes;
@@ -36,7 +37,8 @@ public class Buffer {
         dirtyBit = true;
         contents = bytes;
     }
-    
+
+
     /**
      * Getter method for the dirty bit
      * 
@@ -45,7 +47,8 @@ public class Buffer {
     public boolean getDirty() {
         return dirtyBit;
     }
-    
+
+
     /**
      * Getter method for the blockID
      * 
@@ -54,7 +57,8 @@ public class Buffer {
     public int getBlockID() {
         return blockID;
     }
-    
+
+
     /**
      * Getter method for the byte array
      * 

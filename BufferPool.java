@@ -169,5 +169,14 @@ public class BufferPool implements BufferPoolADT {
     public int getDiskReads() {
         return diskReads;
     }
+    
+    /**
+     * Getter method for list of buffers
+     * 
+     * @return The array list of buffers in the buffer pool
+     */
+    public ArrayList<Buffer> getBufferList() {
+        return bufferList;
+    }
 
 }
