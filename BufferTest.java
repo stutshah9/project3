@@ -1,7 +1,7 @@
 import student.TestCase;
 
 /**
- * this class contains test methods for testing the functionality of Quicksort.
+ * this class contains test methods for testing the functionality of Buffer.
  * it extends the TestCase class for JUnit testing.
  * 
  * @author Stuti Shah & Lauren Spehlmann
