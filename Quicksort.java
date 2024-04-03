@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+
 /**
  * {Project Description Here}
  */
@@ -51,6 +53,13 @@ public class Quicksort {
         String dataFileName = args[0];
         int numBuffers = Integer.parseInt(args[1]);
         String statFileName = args[2];
+        try {
+            BufferPool pool = new BufferPool(dataFileName, numBuffers);
+        }
+        catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 
