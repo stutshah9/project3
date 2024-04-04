@@ -27,15 +27,11 @@ public class Buffer {
 
 
     /**
-     * Changes the contents of the byte array and makes a note to update the
-     * file accordingly
-     * 
-     * @param bytes
-     *            The new contents of the buffer
+     * Sets the dirty bit to true, used when a record is copied into the buffer
+     * during a swap in quicksort
      */
-    public void updateBuffer(byte[] bytes) {
+    public void setDirty() {
         dirtyBit = true;
-        contents = bytes;
     }
 
 

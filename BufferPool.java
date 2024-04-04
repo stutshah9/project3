@@ -23,10 +23,8 @@ public class BufferPool implements BufferPoolADT {
      * 
      * @throws FileNotFoundException
      *             In case the provided name parameter is not a valid file name
-     * @param input
+     * @param name
      *            The name of the file to use as input to the buffer pool
-     * @param output
-     *            The name of the file to use as output to the buffer pool
      * @param sz
      *            The maximum length of the buffer list
      */
@@ -41,28 +39,55 @@ public class BufferPool implements BufferPoolADT {
 
 
     /**
-     * Inserts the given buffer of size 4096 into the specified file position
+     * Inserts the given record of size 4 bytes into the specified file position
      * 
      * @param space
-     *            The contents of the block to insert into the file
-     * @param sz
-     *            The size of the byte array, which is the size of the block and
-     *            always
-     *            4096 in this implementation
+     *            The contents of the record to insert into the file
      * @param pos
-     *            The block ID, which is the index of the block in the file
+     *            The index of the record in the file
      */
     @Override
-    public void insert(byte[] space, int sz, int pos) {
-        try {
-            file.seek(pos);
-            file.write(space);
-            diskWrites = getDiskWrites() + 1;
+    public void insert(byte[] space, int pos) {
+        // Check for the block in the buffer pool
+        boolean found = false;
+        for (int i = 0; i < bufferList.size(); i++) {
+            if (bufferList.get(i).getBlockID() == (pos / 1024)) {
+                // Copy the record into the block and move the block to the
+                // front of the list
+                System.arraycopy(space, 0, bufferList.get(i).getContents(), pos
+                    % 1024, 4);
+                Buffer accessed = bufferList.remove(i);
+                bufferList.add(0, accessed);
+                bufferList.get(i).setDirty();
+                found = true;
+                cacheHits++;
+                break; // Weird things might happen after this swap if we keep
+                // iterating through the list because blocks are out of order
+            }
         }
-        catch (IOException e) {
-            e.printStackTrace();
+        // If the buffer was not already in the buffer pool, it needs to be
+        // added and modified
+        if (found == false) {
+            // Eject the LRU buffer if the buffer pool is full
+            if (bufferList.size() == maxSize) {
+                eject();
+            }
+            // Put the buffer in the buffer pool from the file
+            byte[] contents = new byte[4096];
+            try {
+                file.seek(pos * 4);
+                file.read(contents);
+                diskReads++;
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            bufferList.add(0, new Buffer(pos / 1024, contents));
+            // Now insert the record into the block
+            System.arraycopy(space, 0, bufferList.get(0).getContents(), pos
+                % 1024, 4);
+            bufferList.get(0).setDirty();
         }
-
     }
 
 
@@ -71,30 +96,27 @@ public class BufferPool implements BufferPoolADT {
      * minimizing disk accesses
      * 
      * @param space
-     *            The contents of the block to insert into the file
-     * @param sz
-     *            The size of the byte array, which is the size of the block and
-     *            always
-     *            4096 in this implementation
+     *            The contents of the record to insert into the array
      * @param pos
-     *            The block ID, which is the index of the block in the file
+     *            The index of the record in the file
      */
     @Override
-    public void getbytes(byte[] space, int sz, int pos) {
+    public void getbytes(byte[] space, int pos) {
         // Check for the buffer in the buffer pool
         boolean found = false;
         for (int i = 0; i < bufferList.size(); i++) {
-            if (bufferList.get(i).getBlockID() == pos) {
-                // Copy the entire block into the space array that is the
+            if (bufferList.get(i).getBlockID() == (pos / 1024)) {
+                // Copy the entire record into the space array that is the
                 // parameter to the getBytes() method
-                System.arraycopy(bufferList.get(i).getContents(), 0, space, 0,
-                    4096);
+                System.arraycopy(bufferList.get(i).getContents(), pos % 1024,
+                    space, 0, 4);
                 // Move the buffer to the front of the list because it was
                 // accessed
                 Buffer accessed = bufferList.remove(i);
                 bufferList.add(0, accessed);
+                bufferList.get(i).setDirty();
                 found = true;
-                cacheHits = getCacheHits() + 1;
+                cacheHits++;
                 break; // Weird things might happen after this swap if we keep
                        // iterating through the list
             }
@@ -109,14 +131,18 @@ public class BufferPool implements BufferPoolADT {
             // Put the buffer in the buffer pool from the file
             byte[] contents = new byte[4096];
             try {
-                file.seek(pos * 4096);
-                file.read(contents, 4096, 0);
-                diskReads = getDiskReads() + 1;
+                file.seek(pos * 4);
+                file.read(contents);
+                diskReads++;
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
-            bufferList.add(0, new Buffer(pos, contents));
+            bufferList.add(0, new Buffer(pos / 1024, contents));
+            // Now copy from the record into the array
+            System.arraycopy(bufferList.get(0).getContents(), pos % 1024, space,
+                0, 4);
+            bufferList.get(0).setDirty();
         }
     }
 
@@ -132,10 +158,32 @@ public class BufferPool implements BufferPoolADT {
             try {
                 file.seek(lru.getBlockID() * 4096);
                 file.write(lru.getContents());
-                diskWrites = getDiskWrites() + 1;
+                diskWrites++;
             }
             catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+
+    /**
+     * Method to use after the sort has been completed and the remaining buffers
+     * should be written back to the file
+     */
+    public void writePool() {
+        for (Buffer buffer : bufferList) {
+            if (buffer.getDirty()) {
+                // Moves to the correct byte position in the file using the
+                // block ID
+                try {
+                    file.seek(buffer.getBlockID() * 4096);
+                    file.write(buffer.getContents());
+                    diskWrites++;
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -169,7 +217,8 @@ public class BufferPool implements BufferPoolADT {
     public int getDiskReads() {
         return diskReads;
     }
-    
+
+
     /**
      * Getter method for list of buffers
      * 

@@ -30,11 +30,10 @@ public class BufferTest extends TestCase {
     
     
     /**
-     * Tests that the fields update correctly when the buffer's contents change
+     * Tests that the dirty bit fields update correctly
      */
-    public void testUpdate() {
-        byte[] newBytes = {0x03, 0x22};
-        buffer.updateBuffer(newBytes);
-        assertEquals(buffer.getContents().length, 2);
+    public void testDirty() {
+        buffer.setDirty();
+        assertTrue(buffer.getDirty());
     }
 }
