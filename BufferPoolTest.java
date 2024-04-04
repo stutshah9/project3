@@ -26,12 +26,21 @@ public class BufferPoolTest extends TestCase {
 
 
     /**
-     * Tests the insert method by verifying that the disk writes count was
-     * incremented
+     * Tests the insert method by verifying that the disk reads count was
+     * incremented only when the block was not in the pool
      */
     public void testInsert() {
-        bufferPool.insert(new byte[4096], 0, 0);
-        assertEquals(bufferPool.getDiskWrites(), 1);
+        bufferPool.insert(new byte[4], 0);
+        assertEquals(bufferPool.getDiskReads(), 1);
+        bufferPool.insert(new byte[4], 0);
+        assertEquals(bufferPool.getDiskReads(), 1);
+        assertEquals(bufferPool.getCacheHits(), 1);
+        bufferPool.insert(new byte[4], 1020);
+        bufferPool.insert(new byte[4], 2049);
+        bufferPool.insert(new byte[4], 3073);
+        bufferPool.insert(new byte[4], 5000);
+        bufferPool.insert(new byte[4], 6500);
+        assertEquals(bufferPool.getBufferList().size(), 3);
     }
 
     /**
@@ -40,19 +49,32 @@ public class BufferPoolTest extends TestCase {
      * block
      */
     public void testGetBytes() {
-        byte[] space = new byte[4096];
-        bufferPool.getbytes(space, 4096, 0);
+        byte[] space = new byte[4];
+        bufferPool.getbytes(space, 0);
         assertEquals(bufferPool.getDiskReads(), 1);
-        bufferPool.getbytes(space, 4096, 0);
+        bufferPool.getbytes(space, 0);
         assertEquals(bufferPool.getCacheHits(), 1);
-        bufferPool.getbytes(space, 4096, 1);
-        bufferPool.getBufferList().get(1).updateBuffer(new byte[4096]);
-        assertTrue(bufferPool.getBufferList().get(1).getDirty());
-        bufferPool.getbytes(space, 4096, 2);
-        bufferPool.getbytes(space, 4096, 3);
-        assertEquals(bufferPool.getDiskReads(), 4);
-        assertEquals(bufferPool.getDiskWrites(), 1);
-        bufferPool.getbytes(space, 4096, 4);
-        assertEquals(bufferPool.getDiskWrites(), 1);
+        bufferPool.getbytes(space, 1020);
+        bufferPool.getbytes(space, 2049);
+        bufferPool.getbytes(space, 3073);
+        assertEquals(bufferPool.getDiskReads(), 3);
+        assertEquals(bufferPool.getDiskWrites(), 0);
+        bufferPool.getbytes(space, 4097);
+        bufferPool.getbytes(new byte[4], 5000);
+        bufferPool.getbytes(new byte[4], 6500);
+        assertEquals(bufferPool.getDiskWrites(), 0);
     }
+    
+    /**
+     * Tests writing back the remainder of the pool so that it only outputs to 
+     * the disk when necessary
+     */
+    public void testWritePool() {
+        bufferPool.insert(new byte[4], 1020);
+        bufferPool.insert(new byte[4], 2049);
+        bufferPool.getbytes(new byte[4], 3073);
+        bufferPool.writePool();
+        assertEquals(bufferPool.getDiskWrites(), 2);
+    }
+    
 }

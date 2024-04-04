@@ -114,7 +114,6 @@ public class BufferPool implements BufferPoolADT {
                 // accessed
                 Buffer accessed = bufferList.remove(i);
                 bufferList.add(0, accessed);
-                bufferList.get(i).setDirty();
                 found = true;
                 cacheHits++;
                 break; // Weird things might happen after this swap if we keep
@@ -142,7 +141,6 @@ public class BufferPool implements BufferPoolADT {
             // Now copy from the record into the array
             System.arraycopy(bufferList.get(0).getContents(), pos % 1024, space,
                 0, 4);
-            bufferList.get(0).setDirty();
         }
     }
 
