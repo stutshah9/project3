@@ -77,6 +77,7 @@ public class Sort {
             bufferPool.getbytes(leftRecord, left);
             while (getKey(leftRecord) < pivot) {
                 left++;
+                bufferPool.getbytes(leftRecord, left);
             }
             byte[] rightRecord = new byte[4];
             bufferPool.getbytes(rightRecord, right);

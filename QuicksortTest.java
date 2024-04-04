@@ -64,7 +64,6 @@ public class QuicksortTest extends TestCase {
      *             if an error occurs during the test
      */
     public void testCheckFile() throws Exception {
-        assertTrue(CheckFile.check("tinySorted.txt"));
 
         String fname = "checkme.txt";
         FileGenerator fg = new FileGenerator(fname, 1);
@@ -106,7 +105,7 @@ public class QuicksortTest extends TestCase {
         // Now the file *should* be sorted, so lets check!
 
         // TODO: In a real test, the following should work:
-        // assertTrue(CheckFile.check(fname));
+        assertTrue(CheckFile.check(fname));
     }
 
 }

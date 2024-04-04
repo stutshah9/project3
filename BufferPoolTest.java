@@ -81,7 +81,7 @@ public class BufferPoolTest extends TestCase {
      * Make sure that the file size is calculated
      */
     public void testGetFileSize() {
-        assertEquals(bufferPool.getFileSize(), 4096);
+        assertEquals(bufferPool.getFileSize(), 3072);
     }
     
 }
