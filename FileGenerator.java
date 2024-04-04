@@ -64,12 +64,12 @@ public class FileGenerator {
     /**
      * the number of blocks
      */
-    public final int numBlocks;
+    private final int numBlocks;
 
     /**
      * the name of the file
      */
-    public final String fname;
+    private final String fname;
 
     /**
      * the random generator
