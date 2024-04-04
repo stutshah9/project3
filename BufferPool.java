@@ -226,6 +226,12 @@ public class BufferPool implements BufferPoolADT {
         return bufferList;
     }
     
+    /**
+     * Takes the number of bytes in the file and divides it by 4 to calculate
+     * how many records there are
+     * 
+     * @return The number of records in the file
+     */
     public int getFileSize() {
         try {
             return (int)(file.length()/4);
