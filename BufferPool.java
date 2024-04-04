@@ -225,5 +225,15 @@ public class BufferPool implements BufferPoolADT {
     public ArrayList<Buffer> getBufferList() {
         return bufferList;
     }
+    
+    public int getFileSize() {
+        try {
+            return (int)(file.length()/4);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
 
 }
