@@ -30,13 +30,13 @@ public class Sort {
      */
     public static void quicksort(BufferPool bp, int i, int j) { // Quicksort
         Sort.bufferPool = bp;
-        int pivotindex = findpivot(bp, i, j); // Pick a pivot
-        swap(bp, pivotindex, j); // Stick pivot at end
+        int pivotindex = findpivot(i, j); // Pick a pivot
+        swap(pivotindex, j); // Stick pivot at end
         // k will be the first position in the right subarray
         byte[] jRecord = new byte[4];
-        bp.getbytes(jRecord, j);
-        int k = partition(bp, i, j - 1, getKey(jRecord));
-        swap(bp, k, j); // Put pivot in place
+        bufferPool.getbytes(jRecord, j);
+        int k = partition(i, j - 1, getKey(jRecord));
+        swap(k, j); // Put pivot in place
         if ((k - i) > 1) {
             quicksort(bp, i, k - 1);
         } // Sort left partition
@@ -55,7 +55,7 @@ public class Sort {
      *            End index of the array
      * @return Index of the pivot element
      */
-    public static int findpivot(BufferPool bp, int i, int j) {
+    public static int findpivot(int i, int j) {
         return (i + j) / 2;
     }
 
@@ -71,22 +71,22 @@ public class Sort {
      *            Pivot element
      * @return Index of the first position
      */
-    public static int partition(BufferPool bp, int left, int right, int pivot) {
+    public static int partition(int left, int right, int pivot) {
         while (left <= right) { // Move bounds inward until they meet
             byte[] leftRecord = new byte[4];
-            bp.getbytes(leftRecord, left);
+            bufferPool.getbytes(leftRecord, left);
             while (getKey(leftRecord) < pivot) {
-                bp.getbytes(leftRecord, left);
                 left++;
+                bufferPool.getbytes(leftRecord, left);
             }
             byte[] rightRecord = new byte[4];
-            bp.getbytes(rightRecord, right);
+            bufferPool.getbytes(rightRecord, right);
             while ((right >= left) && (getKey(rightRecord) >= pivot)) {
-                bp.getbytes(leftRecord, right);
+                bufferPool.getbytes(leftRecord, right);
                 right--;
             }
             if (right > left) {
-                swap(bp, left, right);
+                swap(left, right);
             } // Swap out-of-place values
         }
         return left; // Return first position in right partition
@@ -101,13 +101,13 @@ public class Sort {
      * @param j
      *            Index of the second element
      */
-    private static void swap(BufferPool bp, int i, int j) {
+    private static void swap(int i, int j) {
         byte[] iRecord = new byte[4];
-        bp.getbytes(iRecord, i);
+        bufferPool.getbytes(iRecord, i);
         byte[] jRecord = new byte[4];
-        bp.getbytes(jRecord, j);
-        bp.insert(jRecord, i);
-        bp.insert(iRecord, j);
+        bufferPool.getbytes(jRecord, j);
+        bufferPool.insert(jRecord, i);
+        bufferPool.insert(iRecord, j);
     }
 
 

@@ -93,7 +93,7 @@ public class QuicksortTest extends TestCase {
     public void testSorting() throws Exception {
         String fname = "input.bin";
         FileGenerator fg = new FileGenerator(fname, 1);
-        fg.generateFile(FileType.BINARY);
+        fg.generateFile(FileType.ASCII);
 
         assertFalse(CheckFile.check(fname)); // file shouldn't be sorted
 
