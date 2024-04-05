@@ -58,7 +58,7 @@ public class BufferPool implements BufferPoolADT {
                     % 1024, 4);
                 Buffer accessed = bufferList.remove(i);
                 bufferList.add(0, accessed);
-                bufferList.get(i).setDirty();
+                bufferList.get(0).setDirty();
                 found = true;
                 cacheHits++;
                 break; // Weird things might happen after this swap if we keep
@@ -72,10 +72,12 @@ public class BufferPool implements BufferPoolADT {
             if (bufferList.size() == maxSize) {
                 eject();
             }
-            // Put the buffer in the buffer pool from the file
+            // Put the new buffer in the buffer pool from the file
             byte[] contents = new byte[4096];
             try {
-                file.seek(pos * 4);
+                // Find beginning of block
+                int blockID = pos / 1024;
+                file.seek(blockID * 4096);
                 file.read(contents);
                 diskReads++;
             }
@@ -127,10 +129,12 @@ public class BufferPool implements BufferPoolADT {
             if (bufferList.size() == maxSize) {
                 eject();
             }
-            // Put the buffer in the buffer pool from the file
+            // Put the new buffer in the buffer pool from the file
             byte[] contents = new byte[4096];
             try {
-                file.seek(pos * 4);
+                // Find beginning of block
+                int blockID = pos / 1024;
+                file.seek(blockID * 4096);
                 file.read(contents);
                 diskReads++;
             }
