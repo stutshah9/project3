@@ -48,13 +48,13 @@ public class Quicksort {
      *            generate to store runtime statistics; see below for more
      *            information.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         // This is the main file for the program.
         String dataFileName = args[0];
         int numBuffers = Integer.parseInt(args[1]);
         String statFileName = args[2];
         try {
-            BufferPool pool = new BufferPool(dataFileName, numBuffers);
+            fake pool = new fake(dataFileName, numBuffers);
             Sort.quicksort(pool, 0, pool.getFileSize() - 1);
             pool.writePool();
         }

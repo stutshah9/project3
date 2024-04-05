@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 // represents the value of the key
 public class Sort {
 
-    private static BufferPool bufferPool;
+    private static fake bufferPool;
 
     /**
      * Sorts the buffer pool using the Quicksort algorithm
@@ -28,7 +28,7 @@ public class Sort {
      * @param j
      *            End index of the array
      */
-    public static void quicksort(BufferPool bp, int i, int j) { // Quicksort
+    public static void quicksort(fake bp, int i, int j) { // Quicksort
         Sort.bufferPool = bp;
         int pivotindex = findpivot(i, j); // Pick a pivot
         swap(pivotindex, j); // Stick pivot at end
