@@ -54,8 +54,9 @@ public class Quicksort {
         int numBuffers = Integer.parseInt(args[1]);
         String statFileName = args[2];
         try {
-            fake pool = new fake(dataFileName, numBuffers);
-            Sort.quicksort(pool, 0, pool.getFileSize() - 1);
+            BufferPool pool = new BufferPool(dataFileName, numBuffers);
+            int poolSizeCalc = pool.getFileSize();
+            Sort.quicksort(0, poolSizeCalc - 1);
             pool.writePool();
         }
         catch (FileNotFoundException e) {
