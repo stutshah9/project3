@@ -51,23 +51,23 @@ public class BufferPool implements BufferPoolADT {
         // Check for the block in the buffer pool
         boolean found = false;
         for (int i = 0; i < bufferList.size(); i++) {
-            if (bufferList.get(i).getBlockID() == (pos / 1024)) {
+            if (bufferList.get(i).getBlockID() == (pos / 1024) && !found) {
                 // Copy the record into the block and move the block to the
                 // front of the list
-                System.arraycopy(space, 0, bufferList.get(i).getContents(), pos
-                    % 1024, 4);
+                System.arraycopy(space, 0, bufferList.get(i).getContents(), (pos
+                    % 1024)*4, 4);
                 Buffer accessed = bufferList.remove(i);
                 bufferList.add(0, accessed);
                 bufferList.get(0).setDirty();
                 found = true;
                 cacheHits++;
-                break; // Weird things might happen after this swap if we keep
+                // Weird things might happen after this swap if we keep
                 // iterating through the list because blocks are out of order
             }
         }
         // If the buffer was not already in the buffer pool, it needs to be
         // added and modified
-        if (found == false) {
+        if (!found) {
             // Eject the LRU buffer if the buffer pool is full
             if (bufferList.size() == maxSize) {
                 eject();
@@ -86,8 +86,8 @@ public class BufferPool implements BufferPoolADT {
             }
             bufferList.add(0, new Buffer(pos / 1024, contents));
             // Now insert the record into the block
-            System.arraycopy(space, 0, bufferList.get(0).getContents(), pos
-                % 1024, 4);
+            System.arraycopy(space, 0, bufferList.get(0).getContents(), (pos
+                % 1024)*4, 4);
             bufferList.get(0).setDirty();
         }
     }
@@ -107,10 +107,10 @@ public class BufferPool implements BufferPoolADT {
         // Check for the buffer in the buffer pool
         boolean found = false;
         for (int i = 0; i < bufferList.size(); i++) {
-            if (bufferList.get(i).getBlockID() == (pos / 1024)) {
+            if (bufferList.get(i).getBlockID() == (pos / 1024) && !found) {
                 // Copy the entire record into the space array that is the
                 // parameter to the getBytes() method
-                System.arraycopy(bufferList.get(i).getContents(), pos % 1024,
+                System.arraycopy(bufferList.get(i).getContents(), (pos % 1024)*4,
                     space, 0, 4);
                 // Move the buffer to the front of the list because it was
                 // accessed
@@ -118,13 +118,13 @@ public class BufferPool implements BufferPoolADT {
                 bufferList.add(0, accessed);
                 found = true;
                 cacheHits++;
-                break; // Weird things might happen after this swap if we keep
+                // Weird things might happen after this swap if we keep
                        // iterating through the list
             }
         }
         // If the buffer was not already in the buffer pool, it needs to be
         // added
-        if (found == false) {
+        if (!found) {
             // Eject the LRU buffer if the buffer pool is full
             if (bufferList.size() == maxSize) {
                 eject();
@@ -143,7 +143,7 @@ public class BufferPool implements BufferPoolADT {
             }
             bufferList.add(0, new Buffer(pos / 1024, contents));
             // Now copy from the record into the array
-            System.arraycopy(bufferList.get(0).getContents(), pos % 1024, space,
+            System.arraycopy(bufferList.get(0).getContents(), (pos % 1024)*4, space,
                 0, 4);
         }
     }
