@@ -1,6 +1,6 @@
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
 /**
@@ -58,19 +58,33 @@ public class Quicksort {
         String dataFileName = args[0];
         int numBuffers = Integer.parseInt(args[1]);
         String statFileName = args[2];
+        long time = 0;
         try {
             bufferPool = new BufferPool(dataFileName, numBuffers);
             int poolSizeCalc = bufferPool.getFileSize();
+            long start = System.currentTimeMillis();
             quicksort(0, poolSizeCalc - 1);
             bufferPool.writePool();
+            long end = System.currentTimeMillis();
+            time = end - start;
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         try {
-            RandomAccessFile statFile = new RandomAccessFile(statFileName,
-                "rw");
-            statFile.writeChars("");
+            File statFile = new File(statFileName);
+            statFile.setWritable(true);
+            FileWriter writer = new FileWriter(statFile);
+            writer.write("RUNTIME STATS\n");
+            writer.write("File name: " + dataFileName + "\n");
+            writer.write("Cache hits: " + bufferPool.getCacheHits()
+                + "\n");
+            writer.write("Disk reads: " + bufferPool.getDiskReads()
+                + "\n");
+            writer.write("Disk writes: " + bufferPool.getDiskWrites()
+                + "\n");
+            writer.write("Sort execution time: " + time + "ms\n");
+            writer.close();
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
