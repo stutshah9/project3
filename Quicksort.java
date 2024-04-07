@@ -1,6 +1,7 @@
-import java.io.File;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 
 /**
@@ -64,6 +65,7 @@ public class Quicksort {
             int poolSizeCalc = bufferPool.getFileSize();
             long start = System.currentTimeMillis();
             quicksort(0, poolSizeCalc - 1);
+            //for (int i = )
             bufferPool.writePool();
             long end = System.currentTimeMillis();
             time = end - start;
@@ -72,18 +74,14 @@ public class Quicksort {
             e.printStackTrace();
         }
         try {
-            File statFile = new File(statFileName);
-            statFile.setWritable(true);
-            FileWriter writer = new FileWriter(statFile);
+            PrintWriter writer =
+                new PrintWriter(new BufferedWriter(new FileWriter(statFileName, true)));
             writer.write("RUNTIME STATS\n");
             writer.write("File name: " + dataFileName + "\n");
-            writer.write("Cache hits: " + bufferPool.getCacheHits()
-                + "\n");
-            writer.write("Disk reads: " + bufferPool.getDiskReads()
-                + "\n");
-            writer.write("Disk writes: " + bufferPool.getDiskWrites()
-                + "\n");
-            writer.write("Sort execution time: " + time + "ms\n");
+            writer.write("Cache hits: " + bufferPool.getCacheHits() + "\n");
+            writer.write("Disk reads: " + bufferPool.getDiskReads() + "\n");
+            writer.write("Disk writes: " + bufferPool.getDiskWrites() + "\n");
+            writer.write("Sort execution time: " + time + "ms\n\n");
             writer.close();
         }
         catch (FileNotFoundException e) {
@@ -113,10 +111,10 @@ public class Quicksort {
         int k = partition(i, j - 1, key);
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
-        if ((k - i) > 1 && !checkDuplicates(i, k - 1, key, pivot)) {
+        if ((k - i) > 9 && !checkDuplicates(i, k - 1, key, pivot)) {
             quicksort(i, k - 1); // Sort left partition
         }
-        if ((j - k) > 1 && !checkDuplicates(k + 1, j, key, pivot)) {
+        if ((j - k) > 9 && !checkDuplicates(k + 1, j, key, pivot)) {
             quicksort(k + 1, j); // Sort right partition
         }
     }
