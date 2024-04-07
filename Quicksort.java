@@ -65,7 +65,6 @@ public class Quicksort {
             int poolSizeCalc = bufferPool.getFileSize();
             long start = System.currentTimeMillis();
             quicksort(0, poolSizeCalc - 1);
-            //for (int i = )
             bufferPool.writePool();
             long end = System.currentTimeMillis();
             time = end - start;
@@ -111,10 +110,10 @@ public class Quicksort {
         int k = partition(i, j - 1, key);
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
-        if ((k - i) > 9 && !checkDuplicates(i, k - 1, key, pivot)) {
+        if ((k - i) > 1 && !checkDuplicates(i, k - 1, key, pivot)) {
             quicksort(i, k - 1); // Sort left partition
         }
-        if ((j - k) > 9 && !checkDuplicates(k + 1, j, key, pivot)) {
+        if ((j - k) > 1 && !checkDuplicates(k + 1, j, key, pivot)) {
             quicksort(k + 1, j); // Sort right partition
         }
     }
