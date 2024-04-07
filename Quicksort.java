@@ -1,4 +1,6 @@
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
 /**
@@ -65,6 +67,14 @@ public class Quicksort {
         catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        try {
+            RandomAccessFile statFile = new RandomAccessFile(statFileName,
+                "rw");
+            statFile.writeChars("");
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -90,14 +100,28 @@ public class Quicksort {
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
         if ((k - i) > 1 && !checkDuplicates(i, k - 1, key, pivot)) {
-            quicksort(i, k - 1);
-        } // Sort left partition
+            quicksort(i, k - 1); // Sort left partition
+        }
         if ((j - k) > 1 && !checkDuplicates(k + 1, j, key, pivot)) {
-            quicksort(k + 1, j);
-        } // Sort right partition
+            quicksort(k + 1, j); // Sort right partition
+        }
     }
 
 
+    /**
+     * Returns true if all values in the subarray are duplicates to optimize
+     * quicksort
+     * 
+     * @param i
+     *            Beginning index in the subarray
+     * @param j
+     *            End index in the subarray
+     * @param key
+     *            Pivot key
+     * @param bytes
+     *            The array to fill for getbytes
+     * @return True if all value in the range of the pool are the same
+     */
     public static boolean checkDuplicates(
         int i,
         int j,
