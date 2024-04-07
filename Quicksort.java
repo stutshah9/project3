@@ -73,8 +73,8 @@ public class Quicksort {
             e.printStackTrace();
         }
         try {
-            PrintWriter writer =
-                new PrintWriter(new BufferedWriter(new FileWriter(statFileName, true)));
+            PrintWriter writer = new PrintWriter(new BufferedWriter(
+                new FileWriter(statFileName, true)));
             writer.write("RUNTIME STATS\n");
             writer.write("File name: " + dataFileName + "\n");
             writer.write("Cache hits: " + bufferPool.getCacheHits() + "\n");
