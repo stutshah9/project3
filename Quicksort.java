@@ -85,20 +85,24 @@ public class Quicksort {
         bufferPool.getbytes(jRecord, j);
         swap(pivotindex, pivot, j, jRecord); // Stick pivot at end
         // k will be the first position in the right subarray
-        int k = partition(i, j - 1, getKey(pivot));
+        short key = getKey(pivot);
+        int k = partition(i, j - 1, key);
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
-        if ((k - i) > 1 && !checkDuplicates(i, k - 1, getKey(kRecord))) {
+        if ((k - i) > 1 && !checkDuplicates(i, k - 1, key, pivot)) {
             quicksort(i, k - 1);
         } // Sort left partition
-        if ((j - k) > 1 && !checkDuplicates(k + 1, j, getKey(kRecord))) {
+        if ((j - k) > 1 && !checkDuplicates(k + 1, j, key, pivot)) {
             quicksort(k + 1, j);
         } // Sort right partition
     }
-    
-    
-    public static boolean checkDuplicates(int i, int j, short key) {
-        byte[] bytes = new byte[4];
+
+
+    public static boolean checkDuplicates(
+        int i,
+        int j,
+        short key,
+        byte[] bytes) {
         for (int k = i; k <= j; k++) {
             bufferPool.getbytes(bytes, k);
             if (getKey(bytes) != key) {
