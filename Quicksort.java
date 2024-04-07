@@ -35,6 +35,7 @@ import java.nio.ByteBuffer;
 public class Quicksort {
 
     private static BufferPool bufferPool;
+
     /**
      * @param args
      *            Command line parameters.
@@ -50,7 +51,7 @@ public class Quicksort {
      *            generate to store runtime statistics; see below for more
      *            information.
      */
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         // This is the main file for the program.
         String dataFileName = args[0];
         int numBuffers = Integer.parseInt(args[1]);
@@ -65,12 +66,11 @@ public class Quicksort {
             e.printStackTrace();
         }
     }
-    
+
+
     /**
      * Sorts the buffer pool using the Quicksort algorithm
      *
-     * @param bp
-     *            BufferPool to be sorted
      * @param i
      *            Start index of the array
      * @param j
@@ -82,18 +82,30 @@ public class Quicksort {
         byte[] kRecord = new byte[4];
         byte[] jRecord = new byte[4];
         bufferPool.getbytes(pivot, pivotindex);
-        bufferPool.getbytes(jRecord, i);
+        bufferPool.getbytes(jRecord, j);
         swap(pivotindex, pivot, j, jRecord); // Stick pivot at end
         // k will be the first position in the right subarray
         int k = partition(i, j - 1, getKey(pivot));
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
-        if ((k - i) > 1) {
+        if ((k - i) > 1 && !checkDuplicates(i, k - 1, getKey(kRecord))) {
             quicksort(i, k - 1);
         } // Sort left partition
-        if ((j - k) > 1) {
+        if ((j - k) > 1 && !checkDuplicates(k + 1, j, getKey(kRecord))) {
             quicksort(k + 1, j);
         } // Sort right partition
+    }
+    
+    
+    public static boolean checkDuplicates(int i, int j, short key) {
+        byte[] bytes = new byte[4];
+        for (int k = i; k <= j; k++) {
+            bufferPool.getbytes(bytes, k);
+            if (getKey(bytes) != key) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
@@ -110,71 +122,39 @@ public class Quicksort {
         return (i + j) / 2;
     }
 
-// /**
-// * Partitions the array
-// *
-// * @param left
-// * Left index
-// * @param right
-// * Right index
-// * @param pivot
-// * Pivot element
-// * @return Index of the first position
-// */
-// public static int partition(int left, int right, short pivot) {
-// while (left <= right) { // Move bounds inward until they meet
-// byte[] leftRecord = new byte[4];
-// bufferPool.getbytes(leftRecord, left);
-// while (getKey(leftRecord) < pivot) {
-// left++;
-// bufferPool.getbytes(leftRecord, left);
-// }
-// byte[] rightRecord = new byte[4];
-// bufferPool.getbytes(rightRecord, right);
-// while ((right >= left) && (getKey(rightRecord) >= pivot)) {
-// bufferPool.getbytes(leftRecord, right);
-// right--;
-// }
-// if (right > left) {
-// swap(left, right);
-// } // Swap out-of-place values
-// }
-// return left; // Return first position in right partition
-// }
 
-
-    public static int partition(int left, int right, short pivot) {
-        byte[] leftValue = new byte[4];
-        byte[] rightValue = new byte[4];
-        while (left <= right) {
-            while (true) {
-                bufferPool.getbytes(leftValue, left);
-                if (getKey(leftValue) < pivot) {
-                    left++;
-                }
-                else {
-                    break;
+    /**
+     * Partitions the array
+     *
+     * @param left
+     *            Left index
+     * @param right
+     *            Right index
+     * @param pivotKey
+     *            Pivot element
+     * @return Index of the first position
+     */
+    public static int partition(int left, int right, short pivotKey) {
+        byte[] leftRecord = new byte[4];
+        byte[] rightRecord = new byte[4];
+        while (left <= right) { // Move bounds inward until they meet
+            bufferPool.getbytes(leftRecord, left);
+            while (getKey(leftRecord) < pivotKey) {
+                left++;
+                bufferPool.getbytes(leftRecord, left);
+            }
+            bufferPool.getbytes(rightRecord, right);
+            while ((right >= left) && (getKey(rightRecord) >= pivotKey)) {
+                right--;
+                if (right >= 0) {
+                    bufferPool.getbytes(rightRecord, right);
                 }
             }
-
-            while (true) {
-                if (right < left) {
-                    break;
-                }
-                bufferPool.getbytes(rightValue, right);
-                if (getKey(rightValue) > pivot) {
-                    right--;
-                }
-                else {
-                    break;
-                }
-            }
-
             if (right > left) {
-                swap(left, leftValue, right, rightValue);
-            }
+                swap(left, leftRecord, right, rightRecord);
+            } // Swap out-of-place values
         }
-        return left;
+        return left; // Return first position in right partition
     }
 
 
@@ -203,6 +183,5 @@ public class Quicksort {
         ByteBuffer buffer = ByteBuffer.wrap(record);
         return buffer.getShort();
     }
-
 
 }

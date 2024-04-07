@@ -17,6 +17,8 @@ public class BufferPool implements BufferPoolADT {
     private int cacheHits;
     private ArrayList<Buffer> bufferList;
     private int maxSize;
+    private static final int RECORDS_IN_BUFFER = 1024;
+    private static final int BUFFER_SIZE = RECORDS_IN_BUFFER * 4;
 
     /**
      * Constructor for the buffer pool class
@@ -51,11 +53,12 @@ public class BufferPool implements BufferPoolADT {
         // Check for the block in the buffer pool
         boolean found = false;
         for (int i = 0; i < bufferList.size(); i++) {
-            if (bufferList.get(i).getBlockID() == (pos / 1024) && !found) {
+            if (bufferList.get(i).getBlockID() == (pos / RECORDS_IN_BUFFER)
+                && !found) {
                 // Copy the record into the block and move the block to the
                 // front of the list
                 System.arraycopy(space, 0, bufferList.get(i).getContents(), (pos
-                    % 1024)*4, 4);
+                    % RECORDS_IN_BUFFER) * 4, 4);
                 Buffer accessed = bufferList.remove(i);
                 bufferList.add(0, accessed);
                 bufferList.get(0).setDirty();
@@ -73,21 +76,21 @@ public class BufferPool implements BufferPoolADT {
                 eject();
             }
             // Put the new buffer in the buffer pool from the file
-            byte[] contents = new byte[4096];
+            byte[] contents = new byte[BUFFER_SIZE];
             try {
                 // Find beginning of block
-                int blockID = pos / 1024;
-                file.seek(blockID * 4096);
+                int blockID = pos / RECORDS_IN_BUFFER;
+                file.seek(blockID * BUFFER_SIZE);
                 file.read(contents);
                 diskReads++;
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
-            bufferList.add(0, new Buffer(pos / 1024, contents));
+            bufferList.add(0, new Buffer(pos / RECORDS_IN_BUFFER, contents));
             // Now insert the record into the block
             System.arraycopy(space, 0, bufferList.get(0).getContents(), (pos
-                % 1024)*4, 4);
+                % RECORDS_IN_BUFFER) * 4, 4);
             bufferList.get(0).setDirty();
         }
     }
@@ -107,11 +110,12 @@ public class BufferPool implements BufferPoolADT {
         // Check for the buffer in the buffer pool
         boolean found = false;
         for (int i = 0; i < bufferList.size(); i++) {
-            if (bufferList.get(i).getBlockID() == (pos / 1024) && !found) {
+            if (bufferList.get(i).getBlockID() == (pos / RECORDS_IN_BUFFER)
+                && !found) {
                 // Copy the entire record into the space array that is the
                 // parameter to the getBytes() method
-                System.arraycopy(bufferList.get(i).getContents(), (pos % 1024)*4,
-                    space, 0, 4);
+                System.arraycopy(bufferList.get(i).getContents(), (pos
+                    % RECORDS_IN_BUFFER) * 4, space, 0, 4);
                 // Move the buffer to the front of the list because it was
                 // accessed
                 Buffer accessed = bufferList.remove(i);
@@ -119,7 +123,7 @@ public class BufferPool implements BufferPoolADT {
                 found = true;
                 cacheHits++;
                 // Weird things might happen after this swap if we keep
-                       // iterating through the list
+                // iterating through the list
             }
         }
         // If the buffer was not already in the buffer pool, it needs to be
@@ -130,21 +134,21 @@ public class BufferPool implements BufferPoolADT {
                 eject();
             }
             // Put the new buffer in the buffer pool from the file
-            byte[] contents = new byte[4096];
+            byte[] contents = new byte[BUFFER_SIZE];
             try {
                 // Find beginning of block
-                int blockID = pos / 1024;
-                file.seek(blockID * 4096);
+                int blockID = pos / RECORDS_IN_BUFFER;
+                file.seek(blockID * BUFFER_SIZE);
                 file.read(contents);
                 diskReads++;
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
-            bufferList.add(0, new Buffer(pos / 1024, contents));
+            bufferList.add(0, new Buffer(pos / RECORDS_IN_BUFFER, contents));
             // Now copy from the record into the array
-            System.arraycopy(bufferList.get(0).getContents(), (pos % 1024)*4, space,
-                0, 4);
+            System.arraycopy(bufferList.get(0).getContents(), (pos
+                % RECORDS_IN_BUFFER) * 4, space, 0, 4);
         }
     }
 
@@ -158,7 +162,7 @@ public class BufferPool implements BufferPoolADT {
         if (lru.getDirty()) {
             // Moves to the correct byte position in the file using the block ID
             try {
-                file.seek(lru.getBlockID() * 4096);
+                file.seek(lru.getBlockID() * BUFFER_SIZE);
                 file.write(lru.getContents());
                 diskWrites++;
             }
@@ -179,7 +183,7 @@ public class BufferPool implements BufferPoolADT {
                 // Moves to the correct byte position in the file using the
                 // block ID
                 try {
-                    file.seek(buffer.getBlockID() * 4096);
+                    file.seek(buffer.getBlockID() * BUFFER_SIZE);
                     file.write(buffer.getContents());
                     diskWrites++;
                 }
@@ -229,7 +233,8 @@ public class BufferPool implements BufferPoolADT {
     public ArrayList<Buffer> getBufferList() {
         return bufferList;
     }
-    
+
+
     /**
      * Takes the number of bytes in the file and divides it by 4 to calculate
      * how many records there are
@@ -238,7 +243,7 @@ public class BufferPool implements BufferPoolADT {
      */
     public int getFileSize() {
         try {
-            return (int)(file.length()/4);
+            return (int)(file.length() / 4);
         }
         catch (IOException e) {
             e.printStackTrace();

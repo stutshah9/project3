@@ -91,7 +91,7 @@ public class QuicksortTest extends TestCase {
      *             if an I/O error or file not found exception occurs
      */
     public void testSorting() throws Exception {
-        String fname = "input.bin";
+        String fname = "input.txt";
         FileGenerator fg = new FileGenerator(fname, 1);
         fg.generateFile(FileType.ASCII);
 
