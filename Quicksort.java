@@ -127,10 +127,10 @@ public class Quicksort {
         int k = partition(i, j - 1, key);
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
-        if ((k - i) > 9 && !checkDuplicates(i, k - 1, key, pivot)) {
+        if ((k - i) > 8 && !checkDuplicates(i, k - 1, key, pivot)) {
             quicksort(i, k - 1); // Sort left partition
         }
-        if ((j - k) > 9 && !checkDuplicates(k + 1, j - 1, getKey(kRecord),
+        if ((j - k) > 8 && !checkDuplicates(k + 1, j - 1, getKey(kRecord),
             pivot)) {
             quicksort(k + 1, j); // Sort right partition
         }
