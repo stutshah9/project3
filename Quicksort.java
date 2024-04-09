@@ -3,9 +3,11 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
+import java.util.Random;
 
 /**
  * {Project Description Here}
+ * 
  */
 
 /**
@@ -42,6 +44,7 @@ public class Quicksort {
     private static byte[] kRecord;
     private static byte[] jRecord;
     private static byte[] pRecord;
+    private static Random random = new Random();
 
     /**
      * @param args
@@ -74,8 +77,11 @@ public class Quicksort {
             int poolSizeCalc = bufferPool.getFileSize();
             long start = System.currentTimeMillis();
             quicksort(0, poolSizeCalc - 1);
+            // when the subarray in smaller than 9, do insertion sort as
+            // insertion sort is more optimum than quicksort when the array is
+            // almost sorted
             for (int i = 1; i < poolSizeCalc; i++) {
-                
+
                 for (int j = i; j > 0; j--) {
                     bufferPool.getbytes(jRecord, j);
                     bufferPool.getbytes(pRecord, j - 1);
@@ -127,6 +133,7 @@ public class Quicksort {
         int k = partition(i, j - 1, key);
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
+        // already tried 9 but that does not work
         if ((k - i) > 8 && !checkDuplicates(i, k - 1, key, pivot)) {
             quicksort(i, k - 1); // Sort left partition
         }
@@ -166,6 +173,7 @@ public class Quicksort {
     }
 
 
+// UNSURE ABOUT THIS - pivot: choose 3 random pivots and take the median of them
     /**
      * Finds the pivot element
      * 
@@ -176,8 +184,31 @@ public class Quicksort {
      * @return Index of the pivot element
      */
     public static int findpivot(int i, int j) {
-        return (i + j) / 2;
+        int pivot1 = random.nextInt(j - i + 1) + i;
+        int pivot2 = random.nextInt(j - i + 1) + i;
+        int pivot3 = random.nextInt(j - i + 1) + i;
+
+        byte[] pivot1Array = new byte[4];
+        byte[] pivot2Array = new byte[4];
+        byte[] pivot3Array = new byte[4];
+        
+        bufferPool.getbytes(pivot1Array, pivot1);
+        bufferPool.getbytes(pivot2Array, pivot2);
+        bufferPool.getbytes(pivot3Array, pivot3);
+
+        short a = getKey(pivot1Array);
+        short b = getKey(pivot2Array);
+        short c = getKey(pivot3Array);
+
+        if ((a <= b && b <= c) || (c <= b && b <= a)) {
+            return pivot2;
+        } else if ((b <= a && a <= c) || (c <= a && a <= b)) {
+            return pivot1;
+        } else {
+            return pivot3;
+        }
     }
+
 
 
     /**
