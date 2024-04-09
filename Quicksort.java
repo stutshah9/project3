@@ -38,6 +38,10 @@ import java.nio.ByteBuffer;
 public class Quicksort {
 
     private static BufferPool bufferPool;
+    private static byte[] pivot;
+    private static byte[] kRecord;
+    private static byte[] jRecord;
+    private static byte[] pRecord;
 
     /**
      * @param args
@@ -60,11 +64,27 @@ public class Quicksort {
         int numBuffers = Integer.parseInt(args[1]);
         String statFileName = args[2];
         long time = 0;
+        pivot = new byte[4];
+        kRecord = new byte[4];
+        jRecord = new byte[4];
+        pRecord = new byte[4]; // A fourth byte array for partition to
+                               // store records in
         try {
             bufferPool = new BufferPool(dataFileName, numBuffers);
             int poolSizeCalc = bufferPool.getFileSize();
             long start = System.currentTimeMillis();
             quicksort(0, poolSizeCalc - 1);
+            for (int i = 1; i < poolSizeCalc; i++) {
+                
+                for (int j = i; j > 0; j--) {
+                    bufferPool.getbytes(jRecord, j);
+                    bufferPool.getbytes(pRecord, j - 1);
+                    if (getKey(jRecord) >= getKey(pRecord)) {
+                        break;
+                    }
+                    swap(j, jRecord, j - 1, pRecord);
+                }
+            }
             bufferPool.writePool();
             long end = System.currentTimeMillis();
             time = end - start;
@@ -99,9 +119,6 @@ public class Quicksort {
      */
     public static void quicksort(int i, int j) { // Quicksort
         int pivotindex = findpivot(i, j); // Pick a pivot
-        byte[] pivot = new byte[4];
-        byte[] kRecord = new byte[4];
-        byte[] jRecord = new byte[4];
         bufferPool.getbytes(pivot, pivotindex);
         bufferPool.getbytes(jRecord, j);
         swap(pivotindex, pivot, j, jRecord); // Stick pivot at end
@@ -110,10 +127,11 @@ public class Quicksort {
         int k = partition(i, j - 1, key);
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
-        if ((k - i) > 1 && !checkDuplicates(i, k - 1, key, pivot)) {
+        if ((k - i) > 9 && !checkDuplicates(i, k - 1, key, pivot)) {
             quicksort(i, k - 1); // Sort left partition
         }
-        if ((j - k) > 1 && !checkDuplicates(k + 1, j, key, pivot)) {
+        if ((j - k) > 9 && !checkDuplicates(k + 1, j - 1, getKey(kRecord),
+            pivot)) {
             quicksort(k + 1, j); // Sort right partition
         }
     }
@@ -174,23 +192,21 @@ public class Quicksort {
      * @return Index of the first position
      */
     public static int partition(int left, int right, short pivotKey) {
-        byte[] leftRecord = new byte[4];
-        byte[] rightRecord = new byte[4];
         while (left <= right) { // Move bounds inward until they meet
-            bufferPool.getbytes(leftRecord, left);
-            while (getKey(leftRecord) < pivotKey) {
+            bufferPool.getbytes(jRecord, left);
+            while (getKey(jRecord) < pivotKey) {
                 left++;
-                bufferPool.getbytes(leftRecord, left);
+                bufferPool.getbytes(jRecord, left);
             }
-            bufferPool.getbytes(rightRecord, right);
-            while ((right >= left) && (getKey(rightRecord) >= pivotKey)) {
+            bufferPool.getbytes(pRecord, right);
+            while ((right >= left) && (getKey(pRecord) >= pivotKey)) {
                 right--;
                 if (right >= 0) {
-                    bufferPool.getbytes(rightRecord, right);
+                    bufferPool.getbytes(pRecord, right);
                 }
             }
             if (right > left) {
-                swap(left, leftRecord, right, rightRecord);
+                swap(left, jRecord, right, pRecord);
             } // Swap out-of-place values
         }
         return left; // Return first position in right partition
@@ -205,9 +221,9 @@ public class Quicksort {
      * @param j
      *            Index of the second element
      */
-    private static void swap(int i, byte[] iRecord, int j, byte[] jRecord) {
-        bufferPool.insert(jRecord, i);
-        bufferPool.insert(iRecord, j);
+    private static void swap(int i, byte[] recordI, int j, byte[] recordJ) {
+        bufferPool.insert(recordJ, i);
+        bufferPool.insert(recordI, j);
     }
 
 
