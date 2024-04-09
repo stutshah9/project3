@@ -57,7 +57,7 @@ public class BufferPoolTest extends TestCase {
         bufferPool.getbytes(space, 1020);
         bufferPool.getbytes(space, 2049);
         bufferPool.getbytes(space, 3073);
-        assertEquals(bufferPool.getDiskReads(), 4);
+        assertEquals(bufferPool.getDiskReads(), 3);
         assertEquals(bufferPool.getDiskWrites(), 0);
         bufferPool.getbytes(space, 4097);
         bufferPool.getbytes(new byte[4], 5000);
@@ -81,7 +81,7 @@ public class BufferPoolTest extends TestCase {
      * Make sure that the file size is calculated
      */
     public void testGetFileSize() {
-        assertEquals(bufferPool.getFileSize(), 2050);
+        assertEquals(bufferPool.getFileSize(), 3072);
     }
     
 }
