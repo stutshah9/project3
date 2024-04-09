@@ -1,7 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * This class represents a buffer pool
@@ -15,7 +15,7 @@ public class BufferPool implements BufferPoolADT {
     private int diskReads;
     private int diskWrites;
     private int cacheHits;
-    private ArrayList<Buffer> bufferList;
+    private LinkedList<Buffer> bufferList;
     private int maxSize;
     private static final int RECORDS_IN_BUFFER = 1024;
     private static final int BUFFER_SIZE = RECORDS_IN_BUFFER * 4;
@@ -35,7 +35,7 @@ public class BufferPool implements BufferPoolADT {
         diskReads = 0;
         diskWrites = 0;
         cacheHits = 0;
-        bufferList = new ArrayList<Buffer>();
+        bufferList = new LinkedList<Buffer>();
         maxSize = sz;
     }
 
@@ -230,7 +230,7 @@ public class BufferPool implements BufferPoolADT {
      * 
      * @return The array list of buffers in the buffer pool
      */
-    public ArrayList<Buffer> getBufferList() {
+    public LinkedList<Buffer> getBufferList() {
         return bufferList;
     }
 

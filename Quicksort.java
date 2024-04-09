@@ -191,7 +191,7 @@ public class Quicksort {
         byte[] pivot1Array = new byte[4];
         byte[] pivot2Array = new byte[4];
         byte[] pivot3Array = new byte[4];
-        
+
         bufferPool.getbytes(pivot1Array, pivot1);
         bufferPool.getbytes(pivot2Array, pivot2);
         bufferPool.getbytes(pivot3Array, pivot3);
@@ -202,13 +202,14 @@ public class Quicksort {
 
         if ((a <= b && b <= c) || (c <= b && b <= a)) {
             return pivot2;
-        } else if ((b <= a && a <= c) || (c <= a && a <= b)) {
+        }
+        else if ((b <= a && a <= c) || (c <= a && a <= b)) {
             return pivot1;
-        } else {
+        }
+        else {
             return pivot3;
         }
     }
-
 
 
     /**
@@ -249,8 +250,12 @@ public class Quicksort {
      *
      * @param i
      *            Index of the first element
+     * @param recordI
+     *            The byte array for i
      * @param j
      *            Index of the second element
+     * @param recordI
+     *            The byte array for i
      */
     private static void swap(int i, byte[] recordI, int j, byte[] recordJ) {
         bufferPool.insert(recordJ, i);

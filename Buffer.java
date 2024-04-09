@@ -54,7 +54,6 @@ public class Buffer {
         return blockID;
     }
 
-
     /**
      * Getter method for the byte array
      * 
