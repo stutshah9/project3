@@ -133,7 +133,12 @@ public class Quicksort {
         int k = partition(i, j - 1, key);
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
-        // already tried 9 but that does not work
+        // if partition returned the first index --> check duplicates --> if true, terminate
+        if (k == i) {
+            if (checkDuplicates(i+1, j, key, pivot)) {
+                return;
+            }
+        }
         if ((k - i) > 9 && !checkDuplicates(i, k - 1, key, pivot)) {
             quicksort(i, k - 1); // Sort left partition
         }
@@ -258,8 +263,8 @@ public class Quicksort {
      *            The byte array for i
      */
     private static void swap(int i, byte[] recordI, int j, byte[] recordJ) {
-        bufferPool.insert(recordJ, i);
         bufferPool.insert(recordI, j);
+        bufferPool.insert(recordJ, i);
     }
 
 
