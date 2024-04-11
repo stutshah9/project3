@@ -103,8 +103,6 @@ public class QuicksortTest extends TestCase {
         args[2] = "stats.txt"; // filename for sorting stats
         Quicksort.main(args);
         // Now the file *should* be sorted, so lets check!
-
-        // TODO: In a real test, the following should work:
         assertTrue(CheckFile.check(fname));
     }
 

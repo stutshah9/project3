@@ -2,7 +2,7 @@ import java.io.FileNotFoundException;
 import student.TestCase;
 
 /**
- * this class contains test methods for testing the functionality of BufferPool.
+ * This class contains test methods for testing the functionality of BufferPool.
  * it extends the TestCase class for JUnit testing.
  * 
  * @author Stuti Shah & Lauren Spehlmann
@@ -43,6 +43,7 @@ public class BufferPoolTest extends TestCase {
         assertEquals(bufferPool.getBufferList().size(), 3);
     }
 
+
     /**
      * Tests getBytes() when the buffer is not in the pool, is in the buffer,
      * and when the pool has to eject a buffer to make space for the incoming
@@ -64,9 +65,10 @@ public class BufferPoolTest extends TestCase {
         bufferPool.getbytes(new byte[4], 6500);
         assertEquals(bufferPool.getDiskWrites(), 0);
     }
-    
+
+
     /**
-     * Tests writing back the remainder of the pool so that it only outputs to 
+     * Tests writing back the remainder of the pool so that it only outputs to
      * the disk when necessary
      */
     public void testWritePool() {
@@ -76,12 +78,13 @@ public class BufferPoolTest extends TestCase {
         bufferPool.writePool();
         assertEquals(bufferPool.getDiskWrites(), 2);
     }
-    
+
+
     /**
      * Make sure that the file size is calculated
      */
     public void testGetFileSize() {
         assertEquals(bufferPool.getFileSize(), 3072);
     }
-    
+
 }

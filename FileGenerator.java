@@ -3,6 +3,7 @@ import java.util.*;
 
 /**
  * specifies whether a file is binary or ASCII
+ * 
  * @author Stuti Shah and Lauren Spehlmann
  * @version 03/23/2024
  */
@@ -10,7 +11,7 @@ enum FileType {
     /**
      * binary file format
      */
-    BINARY, 
+    BINARY,
     /**
      * ASCII file format
      */

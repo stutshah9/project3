@@ -56,11 +56,33 @@ public class Buffer {
 
 
     /**
+     * Setter method for the blockID
+     * 
+     * @param blockid
+     *            The blockID of the buffer
+     */
+    public void setBlockID(int blockid) {
+        blockID = blockid;
+    }
+
+
+    /**
      * Getter method for the byte array
      * 
      * @return The contents of the block from the file stored in the buffer
      */
     public byte[] getContents() {
         return contents;
+    }
+
+
+    /**
+     * Setter method for the contents
+     * 
+     * @param content
+     *            The contents of the buffer
+     */
+    public void setContents(byte[] content) {
+        contents = content;
     }
 }
