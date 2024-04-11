@@ -37,6 +37,12 @@ public class BufferPool implements BufferPoolADT {
         cacheHits = 0;
         bufferList = new LinkedList<Buffer>();
         maxSize = sz;
+        // for loop --> create all buffers now with dumby value -->
+        // bufferList.add(-1, new byte[BUFFER_SIZE]
+        for (int i = 0; i < sz; i++) {
+            Buffer buffer = new Buffer(-1, new byte[BUFFER_SIZE]);
+            bufferList.add(buffer);
+        }
     }
 
 
@@ -50,16 +56,18 @@ public class BufferPool implements BufferPoolADT {
      */
     @Override
     public void insert(byte[] space, int pos) {
+        int index = 0;
         // Check for the block in the buffer pool
         boolean found = false;
-        for (int i = 0; i < bufferList.size(); i++) {
-            if (bufferList.get(i).getBlockID() == (pos / RECORDS_IN_BUFFER)
+        for (index = 0; index < bufferList.size(); index++) {
+            Buffer getContents = bufferList.get(index);
+            if (getContents.getBlockID() == (pos / RECORDS_IN_BUFFER)
                 && !found) {
                 // Copy the record into the block and move the block to the
                 // front of the list
-                System.arraycopy(space, 0, bufferList.get(i).getContents(), (pos
-                    % RECORDS_IN_BUFFER) * 4, 4);
-                Buffer accessed = bufferList.remove(i);
+                System.arraycopy(space, 0, getContents.getContents(),
+                    (pos % RECORDS_IN_BUFFER) * 4, 4);
+                Buffer accessed = bufferList.remove(index);
                 bufferList.add(0, accessed);
                 bufferList.get(0).setDirty();
                 found = true;
@@ -72,22 +80,27 @@ public class BufferPool implements BufferPoolADT {
         // added and modified
         if (!found) {
             // Eject the LRU buffer if the buffer pool is full
-            if (bufferList.size() == maxSize) {
+            if (index == maxSize) {
                 eject();
+                index--;
             }
+            Buffer bufferOverwrite = bufferList.remove(index);
             // Put the new buffer in the buffer pool from the file
-            byte[] contents = new byte[BUFFER_SIZE];
+//            byte[] contents = new byte[BUFFER_SIZE];
             try {
                 // Find beginning of block
                 int blockID = pos / RECORDS_IN_BUFFER;
                 file.seek(blockID * BUFFER_SIZE);
-                file.read(contents);
+                file.read(bufferOverwrite.getContents());
                 diskReads++;
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
-            bufferList.add(0, new Buffer(pos / RECORDS_IN_BUFFER, contents));
+//            Buffer bufferOverwrite = bufferList.remove(index);
+            bufferOverwrite.setBlockID(pos / RECORDS_IN_BUFFER);
+//            bufferOverwrite.setContents(contents);
+            bufferList.add(0, bufferOverwrite);
             // Now insert the record into the block
             System.arraycopy(space, 0, bufferList.get(0).getContents(), (pos
                 % RECORDS_IN_BUFFER) * 4, 4);
@@ -107,18 +120,20 @@ public class BufferPool implements BufferPoolADT {
      */
     @Override
     public void getbytes(byte[] space, int pos) {
+        int index = 0;
         // Check for the buffer in the buffer pool
         boolean found = false;
-        for (int i = 0; i < bufferList.size(); i++) {
-            if (bufferList.get(i).getBlockID() == (pos / RECORDS_IN_BUFFER)
+        for (index = 0; index < bufferList.size(); index++) {
+            Buffer getContents = bufferList.get(index);
+            if (getContents.getBlockID() == (pos / RECORDS_IN_BUFFER)
                 && !found) {
                 // Copy the entire record into the space array that is the
                 // parameter to the getBytes() method
-                System.arraycopy(bufferList.get(i).getContents(), (pos
+                System.arraycopy(getContents.getContents(), (pos
                     % RECORDS_IN_BUFFER) * 4, space, 0, 4);
                 // Move the buffer to the front of the list because it was
                 // accessed
-                Buffer accessed = bufferList.remove(i);
+                Buffer accessed = bufferList.remove(index);
                 bufferList.add(0, accessed);
                 found = true;
                 cacheHits++;
@@ -130,22 +145,28 @@ public class BufferPool implements BufferPoolADT {
         // added
         if (!found) {
             // Eject the LRU buffer if the buffer pool is full
-            if (bufferList.size() == maxSize) {
+            if (index == maxSize) {
                 eject();
+                index--;
             }
             // Put the new buffer in the buffer pool from the file
-            byte[] contents = new byte[BUFFER_SIZE];
+            // do not need this --> just use buffer.getContents()
+            Buffer bufferOverwrite = bufferList.remove(index);
+//            byte[] contents = new byte[BUFFER_SIZE];
             try {
                 // Find beginning of block
                 int blockID = pos / RECORDS_IN_BUFFER;
                 file.seek(blockID * BUFFER_SIZE);
-                file.read(contents);
+                file.read(bufferOverwrite.getContents());
                 diskReads++;
             }
             catch (IOException e) {
                 e.printStackTrace();
             }
-            bufferList.add(0, new Buffer(pos / RECORDS_IN_BUFFER, contents));
+//            Buffer bufferOverwrite = bufferList.remove(index);
+            bufferOverwrite.setBlockID(pos / RECORDS_IN_BUFFER);
+//            bufferOverwrite.setContents(contents);
+            bufferList.add(0, bufferOverwrite);
             // Now copy from the record into the array
             System.arraycopy(bufferList.get(0).getContents(), (pos
                 % RECORDS_IN_BUFFER) * 4, space, 0, 4);
@@ -158,7 +179,7 @@ public class BufferPool implements BufferPoolADT {
      * necessary
      */
     private void eject() {
-        Buffer lru = bufferList.remove(maxSize - 1);
+        Buffer lru = bufferList.get(maxSize - 1);
         if (lru.getDirty()) {
             // Moves to the correct byte position in the file using the block ID
             try {
