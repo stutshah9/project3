@@ -77,20 +77,6 @@ public class Quicksort {
             int poolSizeCalc = bufferPool.getFileSize();
             long start = System.currentTimeMillis();
             quicksort(0, poolSizeCalc - 1);
-            // when the subarray in smaller than 9, do insertion sort as
-            // insertion sort is more optimum than quicksort when the array is
-            // almost sorted
-            for (int i = 1; i < poolSizeCalc; i++) {
-
-                for (int j = i; j > 0; j--) {
-                    bufferPool.getbytes(jRecord, j);
-                    bufferPool.getbytes(pRecord, j - 1);
-                    if (getKey(jRecord) >= getKey(pRecord)) {
-                        break;
-                    }
-                    swap(j, jRecord, j - 1, pRecord);
-                }
-            }
             bufferPool.writePool();
             long end = System.currentTimeMillis();
             time = end - start;
@@ -124,6 +110,25 @@ public class Quicksort {
      *            End index of the array
      */
     public static void quicksort(int i, int j) { // Quicksort
+        if (checkDuplicates(i, j, pivot)) {
+            return;
+        }
+        if ((j - i) < 9) {
+            // when the subarray in smaller than 9, do insertion sort as
+            // insertion sort is more optimum than quicksort when the array is
+            // almost sorted
+            for (int a = i; a <= j; a++) {
+                for (int b = a; b > 0; b--) {
+                    bufferPool.getbytes(jRecord, b);
+                    bufferPool.getbytes(pRecord, b - 1);
+                    if (getKey(jRecord) >= getKey(pRecord)) {
+                        break;
+                    }
+                    swap(b, jRecord, b - 1, pRecord);
+                }
+            }
+            return;
+        }
         int pivotindex = findpivot(i, j); // Pick a pivot
         bufferPool.getbytes(pivot, pivotindex);
         bufferPool.getbytes(jRecord, j);
@@ -133,20 +138,14 @@ public class Quicksort {
         int k = partition(i, j - 1, key);
         bufferPool.getbytes(kRecord, k);
         swap(k, kRecord, j, pivot); // Put pivot in place
-        // if partition returned the first index --> check duplicates --> if
-        // true, terminate
-        if (k == i) {
-            if (checkDuplicates(i + 1, j, key, pivot)) {
-                return;
-            }
-        }
-        if ((k - i) > 8 && !checkDuplicates(i, k - 1, key, pivot)) {
+        // already tried 9 but that does not work
+        if ((k - i) > 1) {
             quicksort(i, k - 1); // Sort left partition
         }
-        if ((j - k) > 8 && !checkDuplicates(k + 1, j - 1, getKey(kRecord),
-            pivot)) {
+        if ((j - k) > 1) {
             quicksort(k + 1, j); // Sort right partition
         }
+
     }
 
 
@@ -158,18 +157,14 @@ public class Quicksort {
      *            Beginning index in the subarray
      * @param j
      *            End index in the subarray
-     * @param key
-     *            Pivot key
      * @param bytes
      *            The array to fill for getbytes
      * @return True if all value in the range of the pool are the same
      */
-    public static boolean checkDuplicates(
-        int i,
-        int j,
-        short key,
-        byte[] bytes) {
-        for (int k = i; k <= j; k++) {
+    public static boolean checkDuplicates(int i, int j, byte[] bytes) {
+        bufferPool.getbytes(bytes, j);
+        short key = getKey(bytes);
+        for (int k = i; k < j; k++) {
             bufferPool.getbytes(bytes, k);
             if (getKey(bytes) != key) {
                 return false;
@@ -179,7 +174,6 @@ public class Quicksort {
     }
 
 
-// UNSURE ABOUT THIS - pivot: choose 3 random pivots and take the median of them
     /**
      * Finds the pivot element
      * 
@@ -215,7 +209,6 @@ public class Quicksort {
         else {
             return pivot3;
         }
-//        return (i + j) / 2;
     }
 
 
@@ -265,8 +258,8 @@ public class Quicksort {
      *            The byte array for i
      */
     private static void swap(int i, byte[] recordI, int j, byte[] recordJ) {
-        bufferPool.insert(recordI, j);
         bufferPool.insert(recordJ, i);
+        bufferPool.insert(recordI, j);
     }
 
 
